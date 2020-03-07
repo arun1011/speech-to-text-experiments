@@ -1,0 +1,63 @@
+Performed on same working directory
+
+generating acoustic feature files:
+---------------------------------------
+>> D:/Arun/pyprojects/research_projects/speech2text/adaptation/sphinxbase/bin/Release/Win32/sphinx_fe ^
+	-argfile en-US/acoustic-model/feat.params -samprate 16000 -c arctic20.fileids.txt -di . -do . -ei wav -eo mfc -m swav yes
+
+
+Converting the sendump and mdef files:
+---------------------------------------
+>> D:/Arun/pyprojects/research_projects/speech2text/adaptation/sphinxtrain/bin/Release/Win32/pocketsphinx_mdef_convert ^
+	-text en-US/acoustic-model/mdef en-US/acoustic-model/mdef.txt
+
+
+Accumulating observation counts:
+---------------------------------------
+>> D:/Arun/pyprojects/research_projects/speech2text/adaptation/bw ^
+	-hmmdir en-US/acoustic-model 
+	-moddeffn en-US/acoustic-model/mdef.txt 
+	-ts2cbfn .ptm. 
+	-feat 1s_c_d_dd 
+	-svspec 0-12/13-25/26-38 
+	-cmn current 
+	-agc none 
+	-dictfn en-US/pronounciation-dictionary.dict 
+	-ctlfn arctic20.fileids.txt 
+	-lsnfn arctic20.transcription.txt 
+	-accumdir .
+
+
+Creating transformation with MLLR:
+---------------------------------------
+>> D:/Arun/pyprojects/research_projects/speech2text/adaptation/mllr_solve ^
+	-meanfn en-US/acoustic-model/means 
+	-varfn en-US/acoustic-model/variances 
+	-outmllrfn mllr_matrix -accumdir .
+
+
+Updating the acoustic model files with MAP:
+--------------------------------------------
+
+>> D:/Arun/pyprojects/research_projects/speech2text/adaptation/map_adapt ^
+    -moddeffn en-US/acoustic-model/mdef.txt ^
+    -ts2cbfn .ptm. ^
+    -meanfn en-US/acoustic-model/means ^
+    -varfn en-US/acoustic-model/variances ^
+    -mixwfn en-US/acoustic-model/mixture_weights ^
+    -tmatfn en-US/acoustic-model/transition_matrices ^
+    -accumdir . ^
+    -mapmeanfn en-US-adapt/acoustic-model/means ^
+    -mapvarfn en-US-adapt/acoustic-model/variances ^
+    -mapmixwfn en-US-adapt/acoustic-model/mixture_weights ^
+    -maptmatfn en-US-adapt/acoustic-model/transition_matrices
+	
+	
+Recreating the adapted sendump file:
+--------------------------------------------
+
+>> D:/Arun/pyprojects/research_projects/speech2text/adaptation/mk_s2sendump ^
+    -pocketsphinx yes ^
+    -moddeffn en-US-adapt/acoustic-model/mdef.txt ^
+    -mixwfn en-US-adapt/acoustic-model/mixture_weights ^
+    -sendumpfn en-US-adapt/acoustic-model/sendump
